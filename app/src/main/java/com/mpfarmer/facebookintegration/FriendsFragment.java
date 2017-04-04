@@ -1,5 +1,6 @@
 package com.mpfarmer.facebookintegration;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.mpfarmer.facebookintegration.FriendDetailActivity.EXTRA_FRIEND;
+
 /**
  * Created by mpfarmer on 4/3/2017.
  */
@@ -35,7 +38,6 @@ public class FriendsFragment extends Fragment {
     private LinearLayoutManager linearLayoutManager;
     private List<Friend> friendList = new ArrayList<>();
     private FriendsAdapter friendsAdapter;
-    private AccessToken token;
     private TextView tvEmptyList;
     private GraphRequest nextRequest;
 
@@ -50,16 +52,16 @@ public class FriendsFragment extends Fragment {
     public void onStart() {
         super.onStart();
         Log.d(TAG, "onStart()");
-        if (checkAccessToken()) {
-            requestFriends(token);
-        } else {
+        if (!checkAccessToken()) {
             getActivity().finish();
         }
     }
 
     private boolean checkAccessToken() {
-        token = AccessToken.getCurrentAccessToken();
-        Log.d(TAG, token.toString());
+        if (AccessToken.getCurrentAccessToken() == null ||
+                AccessToken.getCurrentAccessToken().isExpired()) {
+            return false;
+        }
         return true;
     }
 
@@ -85,11 +87,14 @@ public class FriendsFragment extends Fragment {
         return true;
     }
 
-    private void requestFriends(AccessToken token) {
+    private void requestFriends() {
+        if (friendList.size() > 0) {
+            return;
+        }
         Bundle params = new Bundle();
         params.putString("fields", "id,name,picture");
         params.putString("limit", "8");
-        GraphRequest graphRequest = new GraphRequest(token,
+        GraphRequest graphRequest = new GraphRequest(AccessToken.getCurrentAccessToken(),
                 "me/taggable_friends",
                 params,
                 HttpMethod.GET,
@@ -110,10 +115,6 @@ public class FriendsFragment extends Fragment {
     public void onNextRequestComplete(GraphResponse graphResponse, JSONObject jsonObject) {
         Log.d(TAG, "next_jsonObject: " + jsonObject);
         List<Friend> newFriends = new ParseJsonUtils().parseJsonObjectToFriendList(jsonObject);
-        int friendCount = newFriends.size();
-        for (int i = 0; i < friendCount; i++) {
-            Log.d(TAG, "Friend:" + i + " " + newFriends.get(i).getId());
-        }
 
         friendList.remove(friendList.size() - 1);
         new Handler().post(new Runnable() {
@@ -137,12 +138,9 @@ public class FriendsFragment extends Fragment {
     }
 
     public void onFriendsRequestComplete(GraphResponse graphResponse, JSONObject jsonObject) {
+        if (friendList == null)
         Log.d(TAG, "jsonObject: " + jsonObject);
         List<Friend> newFriends = new ParseJsonUtils().parseJsonObjectToFriendList(jsonObject);
-        int friendCount = newFriends.size();
-        for (int i = 0; i < friendCount; i++) {
-            Log.d(TAG, "Friend:" + i + " " + newFriends.get(i).getId());
-        }
         friendList.addAll(newFriends);
         friendsAdapter.notifyDataSetChanged();
         rvFriendList.setVisibility(View.VISIBLE);
@@ -169,7 +167,9 @@ public class FriendsFragment extends Fragment {
         friendsAdapter = new FriendsAdapter(friendList, rvFriendList, new FriendsAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Friend item) {
-                getActivity().startActivity(FriendDetailActivity.launchDetail(getActivity(), item));
+                Intent intent = new Intent(getActivity(), FriendDetailActivity.class);
+                intent.putExtra(EXTRA_FRIEND, item);
+                getActivity().startActivity(intent);
             }
         });
         rvFriendList.setAdapter(friendsAdapter);
@@ -207,6 +207,12 @@ public class FriendsFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        requestFriends();
+    }
+
     private GraphRequest.Callback DefaultCallback(final Callback callback) {
         GraphRequest.Callback GraphRequestcallback = new GraphRequest.Callback() {
             @Override
@@ -221,6 +227,7 @@ public class FriendsFragment extends Fragment {
         };
         return GraphRequestcallback;
     }
+
 
     public interface Callback {
         void complete(GraphResponse graphResponse, JSONObject jsonObject);

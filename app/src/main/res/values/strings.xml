@@ -17,4 +17,8 @@
     <string name="default_loading_friends">Press to Load More</string>
     <string name="no_friends_yet">You don\'t have friends yet</string>
     <string name="friend_name">Friend Name</string>
+    <string name="birthday">01/01/1990</string>
+    <string name="phone_number">408-471-XXXX</string>
+    <string name="email">xxxxxx@gmail.com</string>
+    <string name="gender">Female</string>
 </resources>

@@ -19,7 +19,7 @@ public class FriendsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate() " + this.hashCode());
+        Log.d(TAG, "onCreate() ");
         setContentView(R.layout.activity_friends);
         if (savedInstanceState == null) {
             Log.d(TAG, "savedInstanceState == null, transaction add");
@@ -37,30 +37,30 @@ public class FriendsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume() " + this.hashCode());
+        Log.d(TAG, "onResume() ");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause() " + this.hashCode());
+        Log.d(TAG, "onPause() ");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop() " + this.hashCode());
+        Log.d(TAG, "onStop() ");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy() " + this.hashCode());
+        Log.d(TAG, "onDestroy() ");
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        Log.d(TAG, "onBackPressed() " + this.hashCode());
+        finish();
+        Log.d(TAG, "onBackPressed() ");
     }
 }
